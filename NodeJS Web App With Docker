@@ -1,0 +1,101 @@
+# Build Web App with NodeJS in Docker
+
+In here, we will create a simple web application in Node.js. The flow is:
+- Create the Node.js app
+- Creating a Dockerfile
+- .dockerignore file
+- Build Image
+- Run the image
+- Test
+
+## Create the Node.js app
+
+Create new directory for all file project. In directory create a "package.json", you can use template:
+====================================================
+{
+  "name": "docker_web_app",
+  "version": "1.0.0",
+  "description": "Node.js on Docker",
+  "author": "Your Name <Your Name@example.com>",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^4.16.1"
+  }
+}
+=====================================================
+Then, run the command "npm install", if you don't have service npm. You can install with command "apt install npm".
+Note: You can use npm version 5 or later, this will generate a package-lock.json
+
+After that, create a "server.js" Thats file for defines a web app using the "Express.js", you can use template:
+=====================================================
+'use strict';
+
+const express = require('express');
+
+// Constants
+const PORT = 8080;
+const HOST = '0.0.0.0';
+
+// App
+const app = express();
+app.get('/', (req, res) => {
+  res.send('Hello World');
+});
+
+app.listen(PORT, HOST);
+console.log(`Running on http://${HOST}:${PORT}`);
+=====================================================
+
+## Creating a Dockerfile
+
+You can customize script with node.js that was previously created:
+=====================================================
+FROM node:16
+
+WORKDIR /usr/src/app
+COPY package*.json ./
+
+RUN npm install
+
+COPY . .
+
+EXPOSE 8080
+CMD [ "node", "server.js" ]
+======================================
+Symbol "*" in script is A wildcard for ensure package.json and package-lock.json are copied.
+If you building code for production, you can use "RUN npm ci --only=production".
+
+## .dockerignore file
+
+You can create file ".dockerignore" for prevent local modules and debug logs from being copied to the Docker image,
+fearing it will overwrite modules installed in your image.
+================
+node_modules
+npm-debug.log
+================
+
+## Build Image
+
+In directory Dockerfile, run the command:
+========================================
+docker build . -t <name>/node-web-app
+========================================
+
+## Run the image
+
+Run your image with command, in this we use port "49160" :
+===============================================
+docker run -p 49160:8080 -d <name>/node-web-app
+===============================================
+And check for make sure container is running, use commane "docker ps -a".
+
+## Test
+
+You cacn test using app curl or browser. If you use curl, here the command:
+========================
+curl -i localhost:49160
+========================
+Make sure port used is correct.
